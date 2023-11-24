@@ -6,6 +6,8 @@ from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 
+from TestTask_6.Derivative.DerivativeSignal import DerivativeSignal
+from TestTask_6.Shifting_and_Folding.Shift_Fold_Signal import Shift_Fold_Signal
 from comparesignals import SignalSamplesAreEqual
 import comparesignal2
 from QuanTest1 import QuantizationTest1
@@ -136,7 +138,7 @@ def generate_signal_gui(is_sine=True):
                                                     is_sine)
 
         # Call SignalSamplesAreEqual function for comparing generated signals
-        signal_file_name = 'SinOutput.txt' if is_sine else 'CosOutput.txt'
+        signal_file_name = 'TestTask_1\SinOutput.txt' if is_sine else 'TestTask_1\CosOutput.txt'
         SignalSamplesAreEqual(signal_file_name, list(range(len(signal))), signal)
 
         param_dialog.destroy()
@@ -200,6 +202,7 @@ def plot_signal(t, signal, is_sine=True):
 
 
 def plotting(indices, signal, title):
+    plt.figure(figsize=(10, 6))
     plt.plot(indices, signal)
     plt.xlabel('Time')
     plt.ylabel('Amplitude')
@@ -572,15 +575,15 @@ def modify_amplitude_phase():
     modified_amplitude[int(index)] *= amplitude_modifier
     modified_phase[int(index)] += phase_modifier
 
-    reconstructed_signal = idft(modified_amplitude,modified_phase)
+    reconstructed_signal = idft(modified_amplitude, modified_phase)
 
     print(modified_amplitude)
     # Calculate frequency resolution for the modified components
     freq_resolution = sampling_frequency / len(frequency_components)
 
     plt.figure(figsize=(10, 6))
-    #plt.subplot(2, 1, 1)
-    #frequencies = np.arange(0, sampling_frequency, freq_resolution)
+    # plt.subplot(2, 1, 1)
+    # frequencies = np.arange(0, sampling_frequency, freq_resolution)
     plt.plot(reconstructed_signal)
     plt.title('reconstruced signal')
     plt.xlabel('time')
@@ -680,7 +683,7 @@ def dct():
 
         result[k] = math.sqrt(2 / N) * sum_val
 
-    file_name = 'Test Tesk 5\DCT\DCT_output.txt'
+    file_name = 'TestTask_5\DCT\DCT_output.txt'
     comparesignal2.SignalSamplesAreEqual(file_name, result)
 
     plt.figure(figsize=(10, 6))
@@ -719,8 +722,7 @@ def remove_dc():
         result[i] = samples[i] - avg
 
     rounded_numbers = [round(num, 3) for num in result]
-
-    file_name = 'Test Tesk 5\Remove DC component\DC_component_output.txt'
+    file_name = 'TestTask_5\Remove DC component\DC_component_output.txt'
     comparesignal2.SignalSamplesAreEqual(file_name, rounded_numbers)
 
     plt.figure(figsize=(10, 6))
@@ -740,14 +742,160 @@ def remove_dc():
     plt.show()
 
 
-def smoothing(signal, points):
-    result = []
-    for i in range(len(signal)):
-        start_index = max(0, i - points + 1)
-        end_index = i + 1
-        avg = sum(signal[start_index:end_index]) / (end_index - start_index)
-        result.append(avg)
-    return result
+def smoothing():
+    # global sampling_frequency
+    input_gui = Tk()
+    input_gui.geometry('350x300+820+300')
+    input_gui.resizable(False, False)
+    input_gui.title('Window Size')
+    window_size_lbl = Label(input_gui, text='Window Size:')
+    window_size_lbl.pack()
+    window_size_entry = Entry(input_gui)
+    window_size_entry.pack()
+
+    def smoothed_signal():
+        window_size = window_size_entry.get()
+        try:
+            num = int(window_size)
+            indices, samples = read_file()
+
+            smoothed_signal = [0] * (len(samples) - num + 1)
+            for i in range(len(smoothed_signal)):
+                smoothed_signal[i] = sum(samples[i:i + num]) / num
+
+            print(smoothed_signal)
+            print(len(smoothed_signal))
+            plotting(indices[:len(smoothed_signal)], smoothed_signal, 'Smoothed Signal')
+
+        except ValueError:
+            messagebox.showwarning("Enter the Window Size")
+
+        input_gui.destroy()
+
+    generate_button = Button(input_gui, text='Generate Signal', command=smoothed_signal)
+    generate_button.pack()
+    input_gui.mainloop()
+
+
+def sharpening():
+    DerivativeSignal()
+
+
+def delay_advance_signal():
+    input_gui = Tk()
+    input_gui.geometry('350x300+820+300')
+    input_gui.resizable(False, False)
+    input_gui.title('K Steps')
+    num_of_steps_lbl = Label(input_gui, text='Number of Steps:')
+    num_of_steps_lbl.pack()
+    num_of_steps_entry = Entry(input_gui)
+    num_of_steps_entry.pack()
+
+    def delayAdvanced_signal():
+        indices, samples = read_file()
+        num_of_steps = num_of_steps_entry.get()
+        try:
+            num = int(num_of_steps)
+            delayed_advanced_signal = [0] * len(indices)
+
+            for i in range(len(samples)):
+                delayed_advanced_signal[i] = indices[i] + num
+
+            plt.figure(figsize=(10, 6))
+            plt.plot(indices, samples, label='Original Signal')
+            plt.plot(delayed_advanced_signal, samples, label=f'Delayed/Advanced Signal (k={num})')
+            plt.legend()
+            plt.title('Delayed/Advanced Signal')
+            plt.xlabel('Time')
+            plt.ylabel('Amplitude')
+            plt.show()
+        except ValueError:
+            messagebox.showwarning("Enter the number of steps")
+
+        input_gui.destroy()
+
+    generate_button = Button(input_gui, text='Generate Signal', command=delayAdvanced_signal)
+    generate_button.pack()
+    input_gui.mainloop()
+
+
+def fold_signal(fold_only=True):
+    indices, samples = read_file()
+
+    # folded_signal = samples[::-1]
+    folded_signal = [samples[len(samples) - 1 - i] for i in range(len(samples))]
+    if not fold_only:
+        return indices, folded_signal
+    file_name = 'TestTask_6\Shifting_and_Folding\Output_fold.txt'
+    Shift_Fold_Signal(file_name, indices, folded_signal)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(indices, samples, label='Original Signal')
+    plt.plot(indices, folded_signal, label='Folded Signal')
+    plt.legend()
+    plt.title('Folded Signal')
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
+    plt.show()
+
+
+def delay_advance_folded_signal():
+    input_gui = Tk()
+    input_gui.geometry('350x300+820+300')
+    input_gui.resizable(False, False)
+    input_gui.title('K Steps')
+    num_of_steps_lbl = Label(input_gui, text='Number of Steps:')
+    num_of_steps_lbl.pack()
+    num_of_steps_entry = Entry(input_gui)
+    num_of_steps_entry.pack()
+
+    def delayAdvanced_signal():
+        num_of_steps = num_of_steps_entry.get()
+        indices, folded_signal = fold_signal(fold_only=False)
+        try:
+            num = int(num_of_steps)
+            delayed_advanced_signal = [0] * len(indices)
+
+            for i in range(len(indices)):
+                delayed_advanced_signal[i] = indices[i] + num
+
+            int_num1 = [int(num) for num in delayed_advanced_signal]
+            int_num2 = [int(num) for num in folded_signal]
+
+            # file_name = 'TestTask_6\Shifting_and_Folding\Output_ShifFoldedby500.txt'
+            file_name = 'TestTask_6\Shifting_and_Folding\Output_ShiftFoldedby-500.txt'
+            Shift_Fold_Signal(file_name, int_num1, int_num2)
+
+            plt.figure(figsize=(10, 6))
+            plt.plot(indices, folded_signal, label='Original Signal')
+            plt.plot(delayed_advanced_signal, folded_signal, label=f'Delayed/Advanced Folded Signal (k={num})')
+            plt.legend()
+            plt.title('Delayed/Advanced Folded Signal')
+            plt.xlabel('Time')
+            plt.ylabel('Amplitude')
+            plt.show()
+        except ValueError:
+            messagebox.showwarning("Enter the number of steps")
+
+        input_gui.destroy()
+
+    generate_button = Button(input_gui, text='Generate Signal', command=delayAdvanced_signal)
+    generate_button.pack()
+    input_gui.mainloop()
+
+
+def remove_dc_td():
+    indices, samples = read_file()
+
+    dft_data = dft(samples)
+    dft_data[0] = 0
+    result = idft(dft_data, indices)
+
+    rounded_numbers = [round(num, 3) for num in result]
+    print(f'actual output:   {rounded_numbers}')
+
+    file_name = 'TestTask_5\Remove DC component\DC_component_output.txt'
+    comparesignal2.SignalSamplesAreEqual(file_name, rounded_numbers)
 
 
 def GUI():
@@ -832,12 +980,12 @@ def GUI():
     # Add the "Time Domain" menu
     time_domain_menu = Menu(menu)
     menu.add_cascade(label="Time Domain", menu=time_domain_menu)
-    time_domain_menu.add_command(label="Smoothing")
-    time_domain_menu.add_command(label="Sharpening")
-    time_domain_menu.add_command(label="Delaying")
-    time_domain_menu.add_command(label="Folding")
-    time_domain_menu.add_command(label="Delaying")
-    time_domain_menu.add_command(label="Remove DC ")
+    time_domain_menu.add_command(label="Smoothing", command=smoothing)
+    time_domain_menu.add_command(label="Sharpening", command=sharpening)
+    time_domain_menu.add_command(label="Delaying OR Advancing a signal", command=delay_advance_signal)
+    time_domain_menu.add_command(label="Folding", command=fold_signal)
+    time_domain_menu.add_command(label="Delaying OR Advancing a folded signal", command=delay_advance_folded_signal)
+    time_domain_menu.add_command(label="Remove DC ", command=remove_dc_td)
 
     gui.mainloop()
 
