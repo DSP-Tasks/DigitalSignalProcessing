@@ -740,16 +740,6 @@ def remove_dc():
     plt.show()
 
 
-def smoothing(signal, points):
-    result = []
-    for i in range(len(signal)):
-        start_index = max(0, i - points + 1)
-        end_index = i + 1
-        avg = sum(signal[start_index:end_index]) / (end_index - start_index)
-        result.append(avg)
-    return result
-
-
 def GUI():
     gui = Tk()
     gui.geometry('750x500+550+250')
