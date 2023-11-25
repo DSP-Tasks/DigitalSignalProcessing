@@ -24,7 +24,7 @@ def SignalSamplesAreEqual(file_name, samples):
                 line = f.readline()
             else:
                 break
-
+    # print(f'expected output: {expected_samples}')
     if len(expected_samples) != len(samples):
         print("Test case failed, your signal have different length from the expected one")
         return
