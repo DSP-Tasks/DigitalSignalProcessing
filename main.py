@@ -226,7 +226,7 @@ def add_signals():
         try:
             num = int(inupt_user)
             if num == 0:
-                messagebox.showwarning("Enter two signal at least")
+                messagebox.showwarning(title="Warning", message="Enter two signal at least")
             else:
                 indices, samples = read_file()
                 # Iterate over each file path
@@ -241,7 +241,7 @@ def add_signals():
                 plotting(indices, combined_signals, 'Combined Signal')
 
         except ValueError:
-            messagebox.showwarning("Enter the number of signals")
+            messagebox.showwarning(title="Warning", message="Enter the number of signals")
 
         input_gui.destroy()
 
@@ -284,7 +284,7 @@ def multiply_signal():
             plotting(indices, multiplied_signal, 'Multiplied Signal')
 
         except ValueError:
-            messagebox.showwarning("Enter the number of signals")
+            messagebox.showwarning(title="Warning", message="Enter the number of signals")
 
         input_gui.destroy()
 
@@ -373,7 +373,7 @@ def shift_signal():
             plotting(shifted_signal, samples, f'Shifted Signal ({shift_value})')
 
         except ValueError:
-            messagebox.showwarning("Invalid input. Please enter a numeric value.")
+            messagebox.showwarning(title="Warning", message="Invalid input. Please enter a numeric value.")
 
         input_gui.destroy()
 
@@ -491,10 +491,10 @@ def quantize_signal():
             print("mean square error:")
             print(mse)
             # plotting(indices, encoded_signal, "encoded_signal")
-            # QuantizationTest1("Test 1\\Quan1_Out.txt",encoded_signal,quantized_signal)
-            QuantizationTest2("Test 2\\Quan2_Out.txt", level, encoded_signal, quantized_signal, quantization_error)
+            # QuantizationTest1("TestTask_3\Test 1\Quan1_Out.txt",encoded_signal,quantized_signal)
+            QuantizationTest2("TestTask_3\Test 2\Quan2_Out.txt", level, encoded_signal, quantized_signal, quantization_error)
         except ValueError:
-            messagebox.showwarning("Invalid input. Please enter a numeric value.")
+            messagebox.showwarning(title="Warning", message="Invalid input. Please enter a numeric value.")
 
         input_gui.destroy()
 
@@ -526,7 +526,6 @@ def apply_fourier_transform(sampling_freq):
     sampling_frequency = sampling_freq
 
     dft_result = dft(samples)
-
     amplitude = np.abs(dft_result)
     phase = np.angle(dft_result)
 
@@ -562,7 +561,7 @@ def apply_fourier_transform(sampling_freq):
 def modify_amplitude_phase():
     global frequency_components, sampling_frequency
     if frequency_components is None:
-        print("Please apply Fourier Transform first.")
+        messagebox.showwarning(title="Warning", message="Please apply Fourier Transform first")
         return
 
     index = input("Enter index :")
@@ -643,7 +642,7 @@ def idft(amplitude, phase):
 
             result[n] += 1 / N * complex_value * np.exp(2j * np.pi * k * n / N)
 
-    result_idft = np.abs(result)
+    result_idft = result.real
 
     return result_idft
 
@@ -768,7 +767,7 @@ def smoothing():
             plotting(indices[:len(smoothed_signal)], smoothed_signal, 'Smoothed Signal')
 
         except ValueError:
-            messagebox.showwarning("Enter the Window Size")
+            messagebox.showwarning(title="Warning", message="Enter the Window Size")
 
         input_gui.destroy()
 
@@ -792,10 +791,10 @@ def delay_advance_signal():
     num_of_steps_entry.pack()
 
     def delayAdvanced_signal():
-        indices, samples = read_file()
         num_of_steps = num_of_steps_entry.get()
         try:
             num = int(num_of_steps)
+            indices, samples = read_file()
             delayed_advanced_signal = [0] * len(indices)
 
             for i in range(len(samples)):
@@ -810,7 +809,7 @@ def delay_advance_signal():
             plt.ylabel('Amplitude')
             plt.show()
         except ValueError:
-            messagebox.showwarning("Enter the number of steps")
+            messagebox.showwarning(title="Warning", message="Enter the number of steps")
 
         input_gui.destroy()
 
@@ -851,9 +850,9 @@ def delay_advance_folded_signal():
 
     def delayAdvanced_signal():
         num_of_steps = num_of_steps_entry.get()
-        indices, folded_signal = fold_signal(fold_only=False)
         try:
             num = int(num_of_steps)
+            indices, folded_signal = fold_signal(fold_only=False)
             delayed_advanced_signal = [0] * len(indices)
 
             for i in range(len(indices)):
@@ -875,7 +874,7 @@ def delay_advance_folded_signal():
             plt.ylabel('Amplitude')
             plt.show()
         except ValueError:
-            messagebox.showwarning("Enter the number of steps")
+            messagebox.showwarning(title="Warning", message="Enter the number of steps")
 
         input_gui.destroy()
 
@@ -888,11 +887,14 @@ def remove_dc_td():
     indices, samples = read_file()
 
     dft_data = dft(samples)
-    dft_data[0] = 0
-    result = idft(dft_data, indices)
+    amplitude = np.abs(dft_data)
+    phase = np.angle(dft_data)
+
+    amplitude[0] = 0
+    result = idft(amplitude, phase)
 
     rounded_numbers = [round(num, 3) for num in result]
-    print(f'actual output:   {rounded_numbers}')
+    # print(f'actual output:   {rounded_numbers}')
 
     file_name = 'TestTask_5\Remove DC component\DC_component_output.txt'
     comparesignal2.SignalSamplesAreEqual(file_name, rounded_numbers)
@@ -900,13 +902,13 @@ def remove_dc_td():
 
 def GUI():
     gui = Tk()
-    gui.geometry('750x500+550+250')
+    gui.geometry('750x450+520+250')
     gui.resizable(False, False)
     gui.title('Main Form')
     gui.config(background='gray')
 
-    lbl = Label(gui, text='DSP Tasks', bg='yellow', font=("Arial", 16), width=70)
-    lbl.place(x=-25, y=10)
+    lbl = Label(gui, text='DSP Tasks', bg='green', font=("Arial", 16), width=65)
+    lbl.place(x=-20, y=10)
 
     btn_select_file = Button(gui, text='Select File', bg='pink', font=("Arial", 12), width=20,
                              command=signal_representation)
@@ -956,24 +958,15 @@ def GUI():
         sampling_frequency = float(input("Enter the sampling frequency (Hz): "))
         apply_fourier_transform(sampling_frequency)
 
-    def modify_amplitude_phase_menu():
-        modify_amplitude_phase()
-
-    def save_frequency_components_menu():
-        save_frequency_components()
-
-    def read_and_reconstruct_menu():
-        read_and_reconstruct()
-
     # Add the "Frequency Domain" menu
     menu = Menu(gui)
     gui.config(menu=menu)
     frequency_domain_menu = Menu(menu)
     menu.add_cascade(label="Frequency Domain", menu=frequency_domain_menu)
     frequency_domain_menu.add_command(label="Apply Fourier Transform", command=apply_fourier_transform_menu)
-    frequency_domain_menu.add_command(label="Modify Amplitude and Phase", command=modify_amplitude_phase_menu)
-    frequency_domain_menu.add_command(label="Save Frequency Components", command=save_frequency_components_menu)
-    frequency_domain_menu.add_command(label="Read and Reconstruct", command=read_and_reconstruct_menu)
+    frequency_domain_menu.add_command(label="Modify Amplitude and Phase", command=modify_amplitude_phase)
+    frequency_domain_menu.add_command(label="Save Frequency Components", command=save_frequency_components)
+    frequency_domain_menu.add_command(label="Read and Reconstruct", command=read_and_reconstruct)
     frequency_domain_menu.add_command(label="DCT", command=dct)
     frequency_domain_menu.add_command(label="Remove DC", command=remove_dc)
 
