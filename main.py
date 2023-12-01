@@ -214,10 +214,10 @@ def plotting(indices, signal, title):
 
 def add_signals():
     input_gui = Tk()
-    input_gui.geometry('350x300+820+300')
+    input_gui.geometry('250x150+820+300')
     input_gui.resizable(False, False)
     input_gui.title('Addition')
-    num_of_signal_lbl = Label(input_gui, text='Number of Signals:')
+    num_of_signal_lbl = Label(input_gui, text='Number of Signals', font=('Times New Roman', 12))
     num_of_signal_lbl.pack()
     num_of_signal_entry = Entry(input_gui)
     num_of_signal_entry.pack()
@@ -264,10 +264,10 @@ def sub_signals():
 
 def multiply_signal():
     input_gui = Tk()
-    input_gui.geometry('350x300+820+300')
+    input_gui.geometry('250x150+820+300')
     input_gui.resizable(False, False)
     input_gui.title('Multiplication')
-    num_of_signal_lbl = Label(input_gui, text='Enter a number:')
+    num_of_signal_lbl = Label(input_gui, text='Enter a number', font=('Times New Roman', 12))
     num_of_signal_lbl.pack()
     num_of_signal_entry = Entry(input_gui)
     num_of_signal_entry.pack()
@@ -336,12 +336,12 @@ def normalize_signal():
         normalize(False)
         input_gui.destroy()
 
-    choise_lbl = Label(input_gui, text='Normalize from 0 to 1', font=("Arial", 12), width=40)
+    choise_lbl = Label(input_gui, text='Normalize from 0 to 1', font=('Times New Roman', 12), width=40)
     choise_lbl.pack()
     generate_button = Button(input_gui, text='Generate Signal', command=zero)
     generate_button.pack()
 
-    choise_lbl = Label(input_gui, text='Normalize from -1 to 1', font=("Arial", 12), width=40)
+    choise_lbl = Label(input_gui, text='Normalize from -1 to 1', font=('Times New Roman', 12), width=40)
     choise_lbl.pack()
     generate_button = Button(input_gui, text='Generate Signal', command=one)
     generate_button.pack()
@@ -351,11 +351,11 @@ def normalize_signal():
 
 def shift_signal():
     input_gui = Tk()
-    input_gui.geometry('350x300+820+300')
+    input_gui.geometry('250x150+820+300')
     input_gui.resizable(False, False)
     input_gui.title('Shifting')
 
-    shift_label = Label(input_gui, text='Enter the shift constant:')
+    shift_label = Label(input_gui, text='Enter the shift constant', font=('Times New Roman', 12))
     shift_label.pack()
 
     shift_entry = Entry(input_gui)
@@ -401,19 +401,17 @@ def accumulate_signal():
 
 def quantize_signal():
     input_gui = Tk()
-    input_gui.geometry('350x300+820+300')
+    input_gui.geometry('250x150+820+300')
     input_gui.resizable(False, False)
     input_gui.title('Quantiztion')
 
-    level_label = Label(input_gui, text='Enter the Number of Levels:')
+    level_label = Label(input_gui, text='Enter the Number of Levels', font=('Times New Roman', 12))
     level_label.pack()
-
     level_entry = Entry(input_gui)
     level_entry.pack()
 
-    bits_label = Label(input_gui, text='Enter the Number of Bits:')
+    bits_label = Label(input_gui, text='Enter the Number of Bits', font=('Times New Roman', 12))
     bits_label.pack()
-
     bits_entry = Entry(input_gui)
     bits_entry.pack()
 
