@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from TestTask_6.Derivative.DerivativeSignal import DerivativeSignal
 from TestTask_6.Shifting_and_Folding.Shift_Fold_Signal import Shift_Fold_Signal
+from TestTask_7.Convolution import ConvTest
 from comparesignals import SignalSamplesAreEqual
 import comparesignal2
 from QuanTest1 import QuantizationTest1
@@ -742,7 +743,6 @@ def remove_dc():
 
 
 def smoothing():
-    # global sampling_frequency
     input_gui = Tk()
     input_gui.geometry('350x300+820+300')
     input_gui.resizable(False, False)
@@ -891,6 +891,7 @@ def remove_dc_td():
     phase = np.angle(dft_data)
 
     amplitude[0] = 0
+    phase[0] = 0
     result = idft(amplitude, phase)
 
     rounded_numbers = [round(num, 3) for num in result]
@@ -898,6 +899,28 @@ def remove_dc_td():
 
     file_name = 'TestTask_5\Remove DC component\DC_component_output.txt'
     comparesignal2.SignalSamplesAreEqual(file_name, rounded_numbers)
+
+
+def convolution():
+    indices1, samples1 = read_file()
+    indices2, samples2 = read_file()
+
+    result_indices = []
+    result_samples = []
+    for n in range(len(indices1) + len(indices2) - 1):
+        result_indices.append(indices1[0] + indices2[0] + n)
+
+        result_sample = 0
+        for k in range(len(indices1)):
+            if n - k < 0 or n - k >= len(indices2):
+                continue
+            result_sample += samples1[k] * samples2[n - k]
+
+        result_samples.append(result_sample)
+
+    print(f'Result Indices: {result_indices}')
+    print(f'Result Samples: {result_samples}')
+    ConvTest.ConvTest(result_indices, result_samples)
 
 
 def GUI():
@@ -979,6 +1002,7 @@ def GUI():
     time_domain_menu.add_command(label="Folding", command=fold_signal)
     time_domain_menu.add_command(label="Delaying OR Advancing a folded signal", command=delay_advance_folded_signal)
     time_domain_menu.add_command(label="Remove DC ", command=remove_dc_td)
+    time_domain_menu.add_command(label="Convolution ", command=convolution)
 
     gui.mainloop()
 
