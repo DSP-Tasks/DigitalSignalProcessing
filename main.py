@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from TestTask_6.Derivative.DerivativeSignal import DerivativeSignal
 from TestTask_6.Shifting_and_Folding.Shift_Fold_Signal import Shift_Fold_Signal
 from TestTask_7.Convolution import ConvTest
+from TestTask_8.Correlation.CompareSignal import Compare_Signals
 from comparesignals import SignalSamplesAreEqual
 import comparesignal2
 from QuanTest1 import QuantizationTest1
@@ -130,20 +131,25 @@ def generate_signal_gui(is_sine=True):
     sampling_frequency_entry.pack()
 
     def plot_generated_signal():
-        amplitude = float(amplitude_entry.get())
-        phase_shift = float(phase_shift_entry.get())
-        analog_frequency = float(analog_frequency_entry.get())
-        sampling_frequency = float(sampling_frequency_entry.get())
 
-        t, signal = generate_signal_from_parameters(amplitude, phase_shift, analog_frequency, sampling_frequency,
-                                                    is_sine)
+        try:
+            amplitude = float(amplitude_entry.get())
+            phase_shift = float(phase_shift_entry.get())
+            analog_frequency = float(analog_frequency_entry.get())
+            sampling_frequency = float(sampling_frequency_entry.get())
 
-        # Call SignalSamplesAreEqual function for comparing generated signals
-        signal_file_name = 'TestTask_1\SinOutput.txt' if is_sine else 'TestTask_1\CosOutput.txt'
-        SignalSamplesAreEqual(signal_file_name, list(range(len(signal))), signal)
+            t, signal = generate_signal_from_parameters(amplitude, phase_shift, analog_frequency, sampling_frequency,
+                                                        is_sine)
+
+            # Call SignalSamplesAreEqual function for comparing generated signals
+            signal_file_name = 'TestTask_1\SinOutput.txt' if is_sine else 'TestTask_1\CosOutput.txt'
+            SignalSamplesAreEqual(signal_file_name, list(range(len(signal))), signal)
+
+            plot_signal(t, signal, is_sine)
+        except ValueError:
+            messagebox.showwarning(title="Warning", message="Please enter all Parameters.")
 
         param_dialog.destroy()
-        plot_signal(t, signal, is_sine)
 
     generate_button = Button(param_dialog, text='Generate Signal', command=plot_generated_signal)
     generate_button.pack()
@@ -491,7 +497,8 @@ def quantize_signal():
             print(mse)
             # plotting(indices, encoded_signal, "encoded_signal")
             # QuantizationTest1("TestTask_3\Test 1\Quan1_Out.txt",encoded_signal,quantized_signal)
-            QuantizationTest2("TestTask_3\Test 2\Quan2_Out.txt", level, encoded_signal, quantized_signal, quantization_error)
+            QuantizationTest2("TestTask_3\Test 2\Quan2_Out.txt", level, encoded_signal, quantized_signal,
+                              quantization_error)
         except ValueError:
             messagebox.showwarning(title="Warning", message="Invalid input. Please enter a numeric value.")
 
@@ -921,6 +928,28 @@ def convolution():
     ConvTest.ConvTest(result_indices, result_samples)
 
 
+def correlation():
+    indices1, samples1 = read_file()
+    indices2, samples2 = read_file()
+
+    N = len(samples1)
+    signal1_sum = np.sum(np.square(samples1))
+    signal2_sum = np.sum(np.square(samples2))
+    norm_value = 1 / N * np.sqrt(signal1_sum * signal2_sum)
+    print(f'norm_value: {norm_value}')
+    normalized_result = []
+    for i in range(N):
+        correlation_sum = 0
+        for j in range(N):
+            shift = (i + j) % N
+            # print(f'shift: {shift}')
+            correlation_sum += samples1[j] * samples2[shift]
+        # print('*'*500)
+        normalized_result.append((correlation_sum / N) / norm_value)
+    # print(f'normalized_result: {normalized_result}')
+    Compare_Signals('TestTask_8\Correlation\CorrOutput.txt', indices1, normalized_result)
+
+
 def GUI():
     gui = Tk()
     gui.geometry('750x450+520+250')
@@ -1000,7 +1029,12 @@ def GUI():
     time_domain_menu.add_command(label="Folding", command=fold_signal)
     time_domain_menu.add_command(label="Delaying OR Advancing a folded signal", command=delay_advance_folded_signal)
     time_domain_menu.add_command(label="Remove DC ", command=remove_dc_td)
-    time_domain_menu.add_command(label="Convolution ", command=convolution)
+
+    # Add the "Convolution" menu
+    menu.add_cascade(label="Convolution", command=convolution)
+
+    # Add the "Correlation" menu
+    menu.add_cascade(label="Correlation", command=correlation)
 
     gui.mainloop()
 
