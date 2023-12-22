@@ -1,7 +1,7 @@
 import math
 import cmath
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
@@ -232,7 +232,7 @@ def add_signals():
         inupt_user = num_of_signal_entry.get()
         try:
             num = int(inupt_user)
-            if num == 0:
+            if num <= 1:
                 messagebox.showwarning(title="Warning", message="Enter two signal at least")
             else:
                 indices, samples = read_file()
@@ -928,6 +928,34 @@ def convolution():
     ConvTest.ConvTest(result_indices, result_samples)
 
 
+def fast_convolution():
+    indices1, samples1 = read_file()
+    indices2, samples2 = read_file()
+
+    N1 = len(samples1)
+    N2 = len(samples2)
+    samples1_padded = np.pad(samples1, (0, N2 - 1))
+    samples2_padded = np.pad(samples2, (0, N1 - 1))
+
+    dft_signal1 = dft(samples1_padded)
+    dft_signal2 = dft(samples2_padded)
+
+    result_dft = dft_signal1 * dft_signal2
+    amplitude = np.abs(result_dft)
+    phase = np.angle(result_dft)
+
+    result_samples = idft(amplitude, phase)
+
+    result_indices = [indices1[0] + indices2[0] + i for i in range(len(result_samples))]
+
+    result_indices = [int(round(idx)) for idx in result_indices]
+    result_samples = [int(round(sample)) for sample in result_samples]
+
+    print(f'Result Indices: {result_indices}')
+    print(f'Result Samples: {result_samples}')
+    ConvTest.ConvTest(result_indices, result_samples)
+
+
 def correlation():
     indices1, samples1 = read_file()
     indices2, samples2 = read_file()
@@ -936,7 +964,8 @@ def correlation():
     signal1_sum = np.sum(np.square(samples1))
     signal2_sum = np.sum(np.square(samples2))
     norm_value = 1 / N * np.sqrt(signal1_sum * signal2_sum)
-    print(f'norm_value: {norm_value}')
+    # print(f'norm_value: {norm_value}')
+    corr = []
     normalized_result = []
     for i in range(N):
         correlation_sum = 0
@@ -945,8 +974,41 @@ def correlation():
             # print(f'shift: {shift}')
             correlation_sum += samples1[j] * samples2[shift]
         # print('*'*500)
+        corr.append(correlation_sum / N)
         normalized_result.append((correlation_sum / N) / norm_value)
-    # print(f'normalized_result: {normalized_result}')
+    print(f'Correlation: {corr}')
+    print(f'Normalized Correlation: {normalized_result}')
+    Compare_Signals('TestTask_8\Correlation\CorrOutput.txt', indices1, normalized_result)
+
+
+def fast_correlation():
+    indices1, samples1 = read_file()
+    indices2, samples2 = read_file()
+
+    N = len(samples1)
+
+    dft_signal1 = dft(samples1)
+    dft_signal2 = dft(samples2)
+
+    conjugate_dft_res1 = np.conjugate(dft_signal1)
+
+    multiplied_signal = conjugate_dft_res1 * dft_signal2
+
+    amplitude = np.abs(multiplied_signal)
+    phase = np.angle(multiplied_signal)
+
+    idft_res = idft(amplitude, phase)
+
+    corr = idft_res / N
+    corr = corr.real
+
+    # Normalization
+    signal1_sum = np.sum(np.square(samples1))
+    signal2_sum = np.sum(np.square(samples2))
+    norm_value = 1 / N * np.sqrt(signal1_sum * signal2_sum)
+    normalized_result = corr / norm_value
+    print(f'Correlation: {corr}')
+    print(f'Normalized Correlation: {normalized_result}')
     Compare_Signals('TestTask_8\Correlation\CorrOutput.txt', indices1, normalized_result)
 
 
@@ -960,49 +1022,50 @@ def GUI():
     lbl = Label(gui, text='DSP Tasks', bg='green', font=("Arial", 16), width=65)
     lbl.place(x=-20, y=10)
 
-    btn_select_file = Button(gui, text='Select File', bg='pink', font=("Arial", 12), width=20,
-                             command=signal_representation)
+    style = ttk.Style()
+    style.configure("TButton", padding=(10, 5), relief="flat", background="cyan", font=("Arial", 12))
+
+    # Task 1
+    task1_lbl = Label(gui, text='Task 1', bg='cyan', font=("Arial", 12), width=15)
+    task1_lbl.place(x=35, y=55)
+    btn_select_file = ttk.Button(gui, text='Select File', command=signal_representation)
     btn_select_file.place(x=20, y=100)
 
-    btn_generate_sine_signal = Button(gui, text='Generate Sine Signal', bg='lightblue', font=("Arial", 12), width=20,
-                                      command=generate_sine_signal)
+    btn_generate_sine_signal = ttk.Button(gui, text='Generate Sine Signal', command=generate_sine_signal)
     btn_generate_sine_signal.place(x=20, y=150)
 
-    btn_generate_cosine_signal = Button(gui, text='Generate Cosine Signal', bg='lightgreen', font=("Arial", 12),
-                                        width=20, command=generate_cosine_signal)
+    btn_generate_cosine_signal = ttk.Button(gui, text='Generate Cosine Signal', command=generate_cosine_signal)
     btn_generate_cosine_signal.place(x=20, y=200)
 
-    btn_add_signal = Button(gui, text='Add Signals', bg='blue', font=("Arial", 12), width=20,
-                            command=add_signals)
+    # Task 2
+    task2_lbl = Label(gui, text='Task 2', bg='cyan', font=("Arial", 12), width=15)
+    task2_lbl.place(x=430, y=55)
+    btn_add_signal = ttk.Button(gui, text='Add Signals', command=add_signals)
     btn_add_signal.place(x=300, y=100)
 
-    btn_sub_signal = Button(gui, text='Subtact Signals', bg='green', font=("Arial", 12), width=20,
-                            command=sub_signals)
+    btn_sub_signal = ttk.Button(gui, text='Subtact Signals', command=sub_signals)
     btn_sub_signal.place(x=300, y=150)
 
-    btn_multiply_signal = Button(gui, text='Multiply Signal', bg='yellow', font=("Arial", 12), width=20,
-                                 command=multiply_signal)
+    btn_multiply_signal = ttk.Button(gui, text='Multiply Signal', command=multiply_signal)
     btn_multiply_signal.place(x=300, y=200)
 
-    btn_squaring_signal = Button(gui, text='Squaring Signal', bg='orange', font=("Arial", 12), width=20,
-                                 command=squaring_signal)
+    btn_squaring_signal = ttk.Button(gui, text='Squaring Signal', command=squaring_signal)
     btn_squaring_signal.place(x=550, y=100)
 
-    btn_Shifting_signal = Button(gui, text='Shifting Signal', bg='magenta', font=("Arial", 12), width=20,
-                                 command=shift_signal)
+    btn_Shifting_signal = ttk.Button(gui, text='Shifting Signal', command=shift_signal)
     btn_Shifting_signal.place(x=550, y=150)
 
-    btn_normalizes_signal = Button(gui, text='Normalizes Signal', bg='cyan', font=("Arial", 12), width=20,
-                                   command=normalize_signal)
+    btn_normalizes_signal = ttk.Button(gui, text='Normalizes Signal', command=normalize_signal)
     btn_normalizes_signal.place(x=550, y=200)
 
-    btn_accumulation_signal = Button(gui, text='Accumulation Signal', bg='purple', font=("Arial", 12), width=20,
-                                     command=accumulate_signal)
+    btn_accumulation_signal = ttk.Button(gui, text='Accumulation Signal', command=accumulate_signal)
     btn_accumulation_signal.place(x=420, y=250)
 
-    btn_quantize_signal = Button(gui, text='quantization Signal', bg='cyan', font=("Arial", 12), width=20,
-                                 command=quantize_signal)
-    btn_quantize_signal.place(x=20, y=350)
+    # Task 3
+    task2_lbl = Label(gui, text='Task 3', bg='cyan', font=("Arial", 12), width=15)
+    task2_lbl.place(x=310, y=350)
+    btn_quantize_signal = ttk.Button(gui, text='quantization Signal', command=quantize_signal)
+    btn_quantize_signal.place(x=300, y=400)
 
     def apply_fourier_transform_menu():
         sampling_frequency = float(input("Enter the sampling frequency (Hz): "))
@@ -1031,10 +1094,16 @@ def GUI():
     time_domain_menu.add_command(label="Remove DC ", command=remove_dc_td)
 
     # Add the "Convolution" menu
-    menu.add_cascade(label="Convolution", command=convolution)
+    Convolution = Menu(menu)
+    menu.add_cascade(label="Convolution", menu=Convolution)
+    Convolution.add_command(label="Direct Convolution", command=convolution)
+    Convolution.add_command(label="Fast Convolution", command=fast_convolution)
 
     # Add the "Correlation" menu
-    menu.add_cascade(label="Correlation", command=correlation)
+    Correlation = Menu(menu)
+    menu.add_cascade(label="Correlation", menu=Correlation)
+    Correlation.add_command(label="Direct Correlation", command=correlation)
+    Correlation.add_command(label="Fast Correlation", command=fast_correlation)
 
     gui.mainloop()
 
